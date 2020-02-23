@@ -1,0 +1,52 @@
+task installVirtualEnvironment(description: 'Run test in virtual environment') {
+    doLast {
+        if (!file("${projectDir}/venv").exists()) {
+            println "Installing virtual environment into ${projectDir}/venv"
+            exec {
+                executable = "virtualenv"
+                args = ["${projectDir}/vent"]
+            }
+        }
+    }
+}
+
+task updatePythonDependencies(dependsOn: 'installVirtualEnvironment', description: 'Install python package in requirements.txt') {
+    doLast {
+        exec {
+        	println 'class to update python dependencies'
+            executable = "${projectDir}/venv/bin/pip"
+            args = ["install", "-Ur", "${projectDir}/requirements.txt"]
+        }
+        
+    }
+}
+task runTests(dependsOn:'updatePythonDependencies') {
+		println 'runtests'
+       	println projectDir.toString()
+ 
+    ProjConfig config = new ProjConfig(projectDir.toString())
+    def arguments = ['--with-xunit', '--with-html']
+    if (config.parallel) {
+        arguments << '--with-xunitmp' << '--processes=-1' << '--process-timeout=180' << '--process-restartworker'
+    }
+ exec {
+        
+        executable "${projectDir}/venv/bin/nosetests"
+        args arguments
+    }	
+}
+
+class ProjConfig {
+    String projectDir
+
+    ProjConfig(String projectDir) {
+    	println 'class projl'
+        this.projectDir = projectDir
+    }
+
+    boolean parallel = false
+    String xUnitFile = 'nosetests-social.xml'
+    List<String> includePaths = ["${projectDir}"]
+    List<String> attributes
+}
+
