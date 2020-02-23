@@ -21,19 +21,24 @@ task updatePythonDependencies(dependsOn: 'installVirtualEnvironment', descriptio
     }
 }
 task runTests(dependsOn:'updatePythonDependencies') {
-		println 'runtests'
+	println 'runtests'
        	println projectDir.toString()
  
-    ProjConfig config = new ProjConfig(projectDir.toString())
-    def arguments = ['--with-xunit', '--with-html']
-    if (config.parallel) {
-        arguments << '--with-xunitmp' << '--processes=-1' << '--process-timeout=180' << '--process-restartworker'
-    }
- exec {
-        
-        executable "${projectDir}/venv/bin/nosetests"
-        args arguments
-    }	
+    	ProjConfig config = new ProjConfig(projectDir.toString())
+    	def arguments = ['-w',projectDir.toString(), '--with-xunit', '--with-html']
+    	if (config.parallel) {
+        	arguments << '--with-xunitmp' << '--processes=-1' << '--process-timeout=180' << '--process-restartworker'
+    	}
+	doLast {
+		
+ 		exec {
+			
+        		executable = "${projectDir}/venv/bin/nosetests"
+        		args = ["${projectDir}/test/samplenosetest.py", '--with-xunit', '--with-html']
+					
+			
+    		}
+	}	
 }
 
 class ProjConfig {
